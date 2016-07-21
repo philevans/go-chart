@@ -23,6 +23,14 @@ func GenerateTicksWithStep(ra Range, step float64, vf ValueFormatter) []Tick {
 		if len(ticks) > DefaultTickCountSanityCheck {
 			return ticks
 		}
+		lastCursor = cursor
+		lastLabel = vf(cursor)
+	}
+	if lastCursor < max && vf(max) != lastLabel {
+		ticks = append(ticks, Tick{
+			Value: max,
+			Label: vf(max),
+		})
 	}
 	return ticks
 }
