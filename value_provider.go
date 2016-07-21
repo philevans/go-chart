@@ -11,3 +11,8 @@ type BoundedValueProvider interface {
 	Len() int
 	GetBoundedValue(index int) (x, y1, y2 float64)
 }
+
+type StackedValueProvider interface {
+	Len() int
+	GetStackedValue(index int) (float64, float64)
+}

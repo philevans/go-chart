@@ -167,7 +167,12 @@ func (c Chart) getRanges() (xrange, yrange, yrangeAlt Range) {
 			} else if vp, isValueProvider := s.(ValueProvider); isValueProvider {
 				seriesLength := vp.Len()
 				for index := 0; index < seriesLength; index++ {
-					vx, vy := vp.GetValue(index)
+					var vx, vy float64
+					if svp, isStackedProvider := s.(StackedValueProvider); isStackedProvider {
+						vx, vy = svp.GetStackedValue(index)
+					} else {
+						vx, vy = vp.GetValue(index)
+					}
 
 					minx = math.Min(minx, vx)
 					maxx = math.Max(maxx, vx)

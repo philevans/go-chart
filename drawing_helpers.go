@@ -7,15 +7,16 @@ import (
 )
 
 // DrawLineSeries draws a line series with a renderer.
-func DrawLineSeries(r Renderer, canvasBox Box, xrange, yrange Range, s Style, vs ValueProvider) {
+func DrawLineSeries(r Renderer, canvasBox Box, xrange, yrange Range, s Style, vs ValueProvider, svs []ValueProvider) {
 	if vs.Len() == 0 {
 		return
 	}
 
 	cb := canvasBox.Bottom
+	cz := canvasBox.Bottom - yrange.Translate(0)
 	cl := canvasBox.Left
 
-	v0x, v0y := vs.GetValue(0)
+	v0x, v0y := getStackedValue(vs, svs, 0, true)
 	x0 := cl + xrange.Translate(v0x)
 	y0 := cb - yrange.Translate(v0y)
 
@@ -27,13 +28,22 @@ func DrawLineSeries(r Renderer, canvasBox Box, xrange, yrange Range, s Style, vs
 		r.SetFillColor(fill)
 		r.MoveTo(x0, y0)
 		for i := 1; i < vs.Len(); i++ {
-			vx, vy = vs.GetValue(i)
+			vx, vy = getStackedValue(vs, svs, i, true)
 			x = cl + xrange.Translate(vx)
 			y = cb - yrange.Translate(vy)
 			r.LineTo(x, y)
 		}
-		r.LineTo(x, cb)
-		r.LineTo(x0, cb)
+		if len(svs) == 0 {
+			r.LineTo(x, cz)
+			r.LineTo(x0, cz)
+		} else {
+			for i := vs.Len() - 1; i >= 0; i-- {
+				vx, vy = getStackedValue(vs, svs, i, false)
+				x = cl + xrange.Translate(vx)
+				y = cb - yrange.Translate(vy)
+				r.LineTo(x, y)
+			}
+		}
 		r.Close()
 		r.Fill()
 	}
@@ -44,12 +54,27 @@ func DrawLineSeries(r Renderer, canvasBox Box, xrange, yrange Range, s Style, vs
 
 	r.MoveTo(x0, y0)
 	for i := 1; i < vs.Len(); i++ {
-		vx, vy = vs.GetValue(i)
+		vx, vy = getStackedValue(vs, svs, i, true)
 		x = cl + xrange.Translate(vx)
 		y = cb - yrange.Translate(vy)
 		r.LineTo(x, y)
 	}
 	r.Stroke()
+}
+
+func getStackedValue(vs ValueProvider, svs []ValueProvider, index int, top bool) (x float64, y float64) {
+	xs, ys := vs.GetValue(index)
+	x = xs
+	y = 0
+	for _, s := range svs {
+		_, ya := s.GetValue(index)
+		y += ya
+	}
+
+	if top {
+		y += ys
+	}
+	return
 }
 
 // DrawBoundedSeries draws a series that implements BoundedValueProvider.

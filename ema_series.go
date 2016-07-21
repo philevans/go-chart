@@ -86,5 +86,5 @@ func (ema EMASeries) compute(period, index int) float64 {
 // Render renders the series.
 func (ema EMASeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
 	style := ema.Style.WithDefaultsFrom(defaults)
-	DrawLineSeries(r, canvasBox, xrange, yrange, style, ema)
+	DrawLineSeries(r, canvasBox, xrange, yrange, style, ema, []ValueProvider{})
 }

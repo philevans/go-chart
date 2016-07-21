@@ -11,6 +11,8 @@ type TimeSeries struct {
 
 	XValues []time.Time
 	YValues []float64
+
+	StackSeries []TimeSeries
 }
 
 // GetName returns the name of the time series.
@@ -35,6 +37,15 @@ func (ts TimeSeries) GetValue(index int) (x float64, y float64) {
 	return
 }
 
+func (ts TimeSeries) GetStackedValue(index int) (x float64, y float64) {
+	x = TimeToFloat64(ts.XValues[index])
+	y = ts.YValues[index]
+	for _, s := range ts.StackSeries {
+		y += s.YValues[index]
+	}
+	return
+}
+
 // GetValueFormatters returns value formatter defaults for the series.
 func (ts TimeSeries) GetValueFormatters() (x, y ValueFormatter) {
 	x = TimeValueFormatter
@@ -50,5 +61,18 @@ func (ts TimeSeries) GetYAxis() YAxisType {
 // Render renders the series.
 func (ts TimeSeries) Render(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style) {
 	style := ts.Style.WithDefaultsFrom(defaults)
-	DrawLineSeries(r, canvasBox, xrange, yrange, style, ts)
+	DrawLineSeries(r, canvasBox, xrange, yrange, style, ts, []ValueProvider{})
+	lastTS := ts
+	st := []ValueProvider{}
+	for _, s := range ts.StackSeries {
+		st = append(st, lastTS)
+		s.RenderStacked(r, canvasBox, xrange, yrange, defaults, st)
+		lastTS = s
+	}
+
+}
+
+func (ts TimeSeries) RenderStacked(r Renderer, canvasBox Box, xrange, yrange Range, defaults Style, stackSeries []ValueProvider) {
+	style := ts.Style.WithDefaultsFrom(defaults)
+	DrawLineSeries(r, canvasBox, xrange, yrange, style, ts, stackSeries)
 }
