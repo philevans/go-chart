@@ -123,14 +123,26 @@ func (xa XAxis) Render(r Renderer, canvasBox Box, ra Range, defaults Style, tick
 
 	sort.Sort(Ticks(ticks))
 
+	ta := 0
+	for _, t := range ticks {
+		tb := r.MeasureText(t.Label)
+		if tb.Height() > ta {
+			ta = tb.Height()
+		}
+	}
+
+	lastRight := 0
 	for _, t := range ticks {
 		v := t.Value
 		lx := ra.Translate(v)
 		tb := r.MeasureText(t.Label)
 		tx := canvasBox.Left + lx
-		ty := canvasBox.Bottom + DefaultXAxisMargin + tb.Height()
-		r.Text(t.Label, tx-tb.Width()>>1, ty)
-
+		ty := canvasBox.Bottom + DefaultXAxisMargin + ta
+		l := tx - tb.Width()>>1
+		if l > lastRight {
+			r.Text(t.Label, l, ty)
+			lastRight = l + tb.Width()
+		}
 		r.MoveTo(tx, canvasBox.Bottom)
 		r.LineTo(tx, canvasBox.Bottom+DefaultVerticalTickHeight)
 		r.Stroke()
