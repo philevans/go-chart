@@ -4,7 +4,16 @@ package chart
 func GenerateTicksWithStep(ra Range, step float64, vf ValueFormatter) []Tick {
 	var ticks []Tick
 	min, max := ra.Min, ra.Max
+	lastCursor := min
+	lastLabel := ""
+
 	for cursor := min; cursor <= max; cursor += step {
+		if cursor > 0 && lastCursor < 0 {
+			ticks = append(ticks, Tick{
+				Value: 0.0,
+				Label: "",
+			})
+		}
 		ticks = append(ticks, Tick{
 			Value: cursor,
 			Label: vf(cursor),
