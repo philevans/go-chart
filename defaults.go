@@ -95,6 +95,8 @@ var (
 	DefaultAnnotationFillColor = drawing.Color{R: 255, G: 255, B: 255, A: 255}
 	// DefaultGridLineColor is the default grid line color.
 	DefaultGridLineColor = drawing.Color{R: 239, G: 239, B: 239, A: 255}
+	// DefaultZeroLineColor is the default grid line color for the zero point.
+	DefaultZeroGridLineColor = drawing.Color{R: 100, G: 100, B: 100, A: 255}
 )
 
 var (

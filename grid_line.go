@@ -12,10 +12,17 @@ func GenerateGridLines(ticks []Tick, isVertical bool) []GridLine {
 		StrokeColor: DefaultGridLineColor,
 		StrokeWidth: 1.0,
 	}
+	zeroStyle := Style{
+		StrokeColor: DefaultZeroGridLineColor,
+		StrokeWidth: 1.0,
+	}
 	for _, t := range ticks {
 		s := majorStyle
 		if isMinor {
 			s = minorStyle
+		}
+		if t.Value == 0.0 && t.Label == "" {
+			s = zeroStyle
 		}
 		gl = append(gl, GridLine{
 			Style:      s,
